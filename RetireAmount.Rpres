@@ -1,0 +1,72 @@
+RetireAmount
+========================================================
+author: Edward Harris
+date: September 17, 2017
+autosize: true
+
+Introduction
+========================================================
+
+People often talk about retirement in terms of the activities, vacations, or time with familiy.  Most individuals, however, are not aware of how much money is needed to retire.  Some may even plan on living on Social Security.
+
+This tool is not intended to replace the advice of a professional Financial Planner and/or Tax Expert.  There are many variables to be considered that can make a difference in the results for an individual.  This tool provides some potential scenarios based on an individuals perspective about income needs, age of retirement, and other variables.
+
+
+
+Overview of Input
+========================================================
+There are many items that likely should be considered in developing a very robust model to estimate your individual financial needs for retirement.  This model considers some "key" variables to estimating retirement needs.  The items for input include:
+
+* Your current age
+* Current gross income
+* Retirement Age
+* Estimate of inflation (change in cost of living)
+* Return on Investments
+* Social Security payments
+
+This tool then calculate an estimate of funds required to retire.  By changing assumptions, you can see how much they influence the level of funding requred.
+
+
+Retirement Funding -- Calculation
+========================================================
+The following illustration is for a 'Male' age 50 that plans to retire at age 67.  Based on the 2014 Social Security Mortality table he expect to live until age 79.64. His current gross income is $100,000 and he contributes 10% to retirement (e.g. 401K).  He expects an average of 6% growth on the retirement funds along with inflation to be an average of 3%.  In today's dollars, he expects Social Security payments of $2,000.
+
+```{r, echo=TRUE}
+library(plyr)
+library(dplyr)
+
+death <- c(74.64, 79.64, 84.64)  # Includes death 5 years premature / later
+income.at.retire <- 100000 * (1 - 0.10) * (1 + 0.03)^(67 - 50)
+ssn.at.retire <- 2000 * (1 + 0.03)^(67 - 50)
+
+# Calculating Retirement Funds Required (for estimated ages of death)
+# Formula:  payment * [(1 - (1 +r)^(-n))/ r]
+
+payment <-  income.at.retire - ssn.at.retire
+n <-  c(7.64, 12.64, 17.64)   # Age at death - Age of Retirement
+r <-  0.03    # Expecte return of investments less inflation
+retire75 <- payment * ((1-(1+r)^(-7.64))/r)
+retire80 <- payment * ((1-(1+r)^(-12.64))/r)
+retire85 <- payment * ((1-(1+r)^(-17.64))/r)
+FundAmount <- c(retire75, retire80, retire85)
+
+dat <- data.frame(death, FundAmount)
+```
+
+
+Retirement Funding -- Illustration
+========================================================
+Here is an illustration of the amount of funds required to retire.  Surprised?
+
+```{r echo = FALSE}
+library(dplyr)
+library(webshot)
+
+par(mar = c(6, 6, 4, 1))
+barplot(dat[,2], names.arg = dat[,1],
+        main = "Estimated Retirement Fund",
+        xlab = "Age of Death",
+        ylab = "Retirement Fund Amount")
+
+```
+
